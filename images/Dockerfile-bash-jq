@@ -1,0 +1,7 @@
+FROM alpine:3.22 AS builder
+
+RUN apk add --no-cache jq
+
+FROM chainguard/bash:latest
+
+COPY --from=builder /usr/bin/jq /usr/bin/jq

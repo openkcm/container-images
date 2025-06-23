@@ -1,7 +1,9 @@
-FROM alpine:3.22 AS builder
+FROM alpine:3.22
 
-RUN apk add --no-cache jq
+RUN apk add --no-cache bash curl jq ca-certificates \
+    && rm -rf /var/cache/apk/* \
+    && rm -f /sbin/apk /bin/apk /usr/bin/apk
 
-FROM chainguard/bash:latest
+ENV SHELL=/bin/bash
 
-COPY --from=builder /usr/bin/jq /usr/bin/jq
+CMD ["/bin/bash"]

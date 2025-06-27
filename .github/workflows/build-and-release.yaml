@@ -40,14 +40,14 @@ jobs:
         run: |
           DOCKERFILE_NAME="${{ inputs.dockerfile_name }}"
           IMAGE_SUFFIX="${DOCKERFILE_NAME#Dockerfile-}"  # strips "Dockerfile-"
-          IMAGE_NAME="ghcr.io/openkcm/images/${IMAGE_SUFFIX}:v${{ inputs.version }}"
+          IMAGE_NAME="ghcr.io/openkcm/container-images/${IMAGE_SUFFIX}:v${{ inputs.version }}"
           echo "image_name=$IMAGE_NAME" >> $GITHUB_OUTPUT
 
       - name: Build and Publish Multi-Arch Docker Image
         run: |
           docker buildx build \
             --platform linux/amd64,linux/arm64 \
-            -f images/${{ inputs.dockerfile_name }} \
+            -f container-images/${{ inputs.dockerfile_name }} \
             -t ${{ steps.meta.outputs.image_name }} \
             --push \
             .

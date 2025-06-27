@@ -1,4 +1,4 @@
-FROM openpolicyagent/opa:1.5.1-envoy-4
+FROM docker.io/openpolicyagent/opa:1.5.1-envoy-4
 
 USER root
 

@@ -1,7 +1,0 @@
-FROM docker.io/openpolicyagent/opa:1.5.1-envoy-4
-
-USER root
-
-RUN apk add --no-cache bash curl jq
-
-USER opa

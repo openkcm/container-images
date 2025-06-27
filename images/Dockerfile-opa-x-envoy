@@ -1,4 +1,4 @@
-FROM openpolicyagent/opa:1.4.2-envoy
+FROM openpolicyagent/opa:1.5.1-envoy-4
 
 USER root
 

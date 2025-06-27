@@ -11,6 +11,11 @@ on:
         description: 'Dockerfile name from ./images/ directory (e.g., Dockerfile-x-y-z)'
         required: true
         type: string
+      platforms:
+        description: 'Platforms: Default: linux/amd64,linux/arm64'
+        required: true
+        type: string
+        default: "linux/amd64,linux/arm64"
 
 jobs:
   build-and-release:
@@ -46,7 +51,7 @@ jobs:
       - name: Build and Publish Multi-Arch Docker Image
         run: |
           docker buildx build \
-            --platform linux/amd64,linux/arm64 \
+            --platform ${{ inputs.platforms }} \
             -f images/${{ inputs.dockerfile_name }} \
             -t ${{ steps.meta.outputs.image_name }} \
             --push \

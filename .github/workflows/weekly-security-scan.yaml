@@ -21,7 +21,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - image: bash-curl-jq
+          - image: bash-jq
             tag: v0.1.0
 
     steps:

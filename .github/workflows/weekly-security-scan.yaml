@@ -34,15 +34,9 @@ jobs:
       - name: Get latest image tag
         id: get-tag
         run: |
-          # Get auth token for GHCR
-          AUTH=$(echo -n "${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}" | base64)
-          TOKEN=$(curl -s -H "Authorization: Basic ${AUTH}" \
-            "https://ghcr.io/token?scope=repository:openkcm/images/${{ matrix.image }}:pull" | jq -r '.token')
-          
-          # Get tags and find latest version
-          TAG=$(curl -s -H "Authorization: Bearer ${TOKEN}" \
-            "https://ghcr.io/v2/openkcm/images/${{ matrix.image }}/tags/list" | \
-            jq -r '.tags | map(select(startswith("v"))) | sort_by(. | ltrimstr("v") | split(".") | map(tonumber)) | last')
+          # Use skopeo to list tags (uses docker login credentials)
+          TAGS=$(skopeo list-tags docker://ghcr.io/openkcm/images/${{ matrix.image }} 2>/dev/null)
+          TAG=$(echo "$TAGS" | jq -r '.Tags | map(select(startswith("v"))) | sort_by(. | ltrimstr("v") | split(".") | map(tonumber)) | last')
           echo "tag=$TAG" >> $GITHUB_OUTPUT
           echo "Found latest tag: $TAG"
 

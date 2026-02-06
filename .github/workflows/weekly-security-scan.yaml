@@ -34,8 +34,9 @@ jobs:
       - name: Get latest image tag
         id: get-tag
         run: |
-          # Use skopeo to list tags (uses docker login credentials)
-          TAGS=$(skopeo list-tags docker://ghcr.io/openkcm/images/${{ matrix.image }} 2>/dev/null)
+          # Use skopeo with explicit credentials
+          TAGS=$(skopeo list-tags --creds "${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}" \
+            docker://ghcr.io/openkcm/images/${{ matrix.image }})
           TAG=$(echo "$TAGS" | jq -r '.Tags | map(select(startswith("v"))) | sort_by(. | ltrimstr("v") | split(".") | map(tonumber)) | last')
           echo "tag=$TAG" >> $GITHUB_OUTPUT
           echo "Found latest tag: $TAG"

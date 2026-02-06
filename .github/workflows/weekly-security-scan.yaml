@@ -20,8 +20,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        image:
-          - bash-curl-jq
+        include:
+          - image: bash-curl-jq
+            tag: v0.1.0
 
     steps:
       - name: Log in to GitHub Container Registry (GHCR)
@@ -31,20 +32,10 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Get latest image tag
-        id: get-tag
-        run: |
-          # Use skopeo with explicit credentials
-          TAGS=$(skopeo list-tags --creds "${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}" \
-            docker://ghcr.io/openkcm/images/${{ matrix.image }})
-          TAG=$(echo "$TAGS" | jq -r '.Tags | map(select(startswith("v"))) | sort_by(. | ltrimstr("v") | split(".") | map(tonumber)) | last')
-          echo "tag=$TAG" >> $GITHUB_OUTPUT
-          echo "Found latest tag: $TAG"
-
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@0.28.0
         with:
-          image-ref: ghcr.io/openkcm/images/${{ matrix.image }}:${{ steps.get-tag.outputs.tag }}
+          image-ref: ghcr.io/openkcm/images/${{ matrix.image }}:${{ matrix.tag }}
           format: 'sarif'
           output: 'trivy-results.sarif'
           exit-code: '1'

@@ -5,6 +5,9 @@ on:
     # Runs every Monday at 06:00 UTC
     - cron: '0 6 * * 1'
   workflow_dispatch:
+  push:
+    branches:
+      - feature/security
 
 jobs:
   scan-images:
@@ -27,6 +30,7 @@ jobs:
           image-ref: ghcr.io/openkcm/images/${{ matrix.image }}:latest
           format: 'sarif'
           output: 'trivy-results.sarif'
+          exit-code: '1'
           ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
@@ -36,13 +40,3 @@ jobs:
         if: always()
         with:
           sarif_file: 'trivy-results.sarif'
-
-      - name: Run Trivy and fail on vulnerabilities
-        uses: aquasecurity/trivy-action@0.28.0
-        with:
-          image-ref: ghcr.io/openkcm/images/${{ matrix.image }}:latest
-          format: 'table'
-          exit-code: '1'
-          ignore-unfixed: true
-          vuln-type: 'os,library'
-          severity: 'CRITICAL,HIGH'

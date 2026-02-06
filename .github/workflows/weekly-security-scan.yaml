@@ -34,13 +34,11 @@ jobs:
       - name: Get latest image tag
         id: get-tag
         run: |
-          TAG=$(gh api \
-            -H "Accept: application/vnd.github+json" \
-            /orgs/openkcm/packages/container/images%2F${{ matrix.image }}/versions \
-            --jq '.[0].metadata.container.tags[0]')
+          TOKEN=$(echo ${{ secrets.GITHUB_TOKEN }} | base64)
+          TAG=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            "https://ghcr.io/v2/openkcm/images/${{ matrix.image }}/tags/list" | \
+            jq -r '.tags | map(select(startswith("v"))) | sort_by(. | ltrimstr("v") | split(".") | map(tonumber)) | last')
           echo "tag=$TAG" >> $GITHUB_OUTPUT
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@0.28.0

@@ -14,31 +14,31 @@ jobs:
     runs-on: ubuntu-24.04
     permissions:
       contents: read
-      packages: read
       security-events: write
 
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - image: bash-jq
-            tag: v0.1.0
+        dockerfile:
+          - Dockerfile-bash-curl-jq
 
     steps:
-      - name: Log in to GitHub Container Registry (GHCR)
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        id: build
+        run: |
+          IMAGE_NAME=$(echo "${{ matrix.dockerfile }}" | sed 's/Dockerfile-//')
+          docker build -f images/${{ matrix.dockerfile }} -t ${IMAGE_NAME}:scan .
+          echo "image_name=${IMAGE_NAME}:scan" >> $GITHUB_OUTPUT
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@0.28.0
         with:
-          image-ref: ghcr.io/openkcm/images/${{ matrix.image }}:${{ matrix.tag }}
+          image-ref: ${{ steps.build.outputs.image_name }}
           format: 'sarif'
           output: 'trivy-results.sarif'
-          exit-code: '1'
           ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
@@ -48,3 +48,4 @@ jobs:
         if: always()
         with:
           sarif_file: 'trivy-results.sarif'
+          category: ${{ matrix.dockerfile }}

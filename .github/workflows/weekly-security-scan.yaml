@@ -1,0 +1,69 @@
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+name: trivy
+
+on:
+  push:
+    branches: [ "feature/security" ]
+  pull_request:
+    branches: [ "feature/security" ]
+  schedule:
+    - cron: '30 14 * * 6'
+
+permissions:
+  contents: read
+
+jobs:
+  find-dockerfiles:
+    runs-on: ubuntu-latest
+    outputs:
+      dockerfiles: ${{ steps.find.outputs.dockerfiles }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Find Dockerfiles
+        id: find
+        run: |
+          DOCKERFILES=$(ls images/Dockerfile-* 2>/dev/null | xargs -n1 basename | jq -R -s -c 'split("\n") | map(select(length > 0))')
+          echo "dockerfiles=$DOCKERFILES" >> $GITHUB_OUTPUT
+
+  build:
+    needs: find-dockerfiles
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+    name: Build
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        dockerfile: ${{ fromJson(needs.find-dockerfiles.outputs.dockerfiles) }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build an image from Dockerfile
+        id: build
+        run: |
+          IMAGE_NAME=$(echo "${{ matrix.dockerfile }}" | sed 's/Dockerfile-//')
+          docker build -f images/${{ matrix.dockerfile }} -t ${IMAGE_NAME}:${{ github.sha }} .
+          echo "image_name=${IMAGE_NAME}:${{ github.sha }}" >> $GITHUB_OUTPUT
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: ${{ steps.build.outputs.image_name }}
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: 'trivy-results.sarif'
+          category: ${{ matrix.dockerfile }}

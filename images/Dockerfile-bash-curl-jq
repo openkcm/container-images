@@ -1,6 +1,6 @@
 FROM alpine:3.23.3
 
-RUN apk add --no-cache bash curl jq ca-certificates \
+RUN apk add --no-cache bash curl jq ca-certificates bind-tools \
     && rm -rf /var/cache/apk/* \
     && rm -f /sbin/apk /bin/apk /usr/bin/apk
 

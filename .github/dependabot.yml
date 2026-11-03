@@ -1,0 +1,17 @@
+version: 2
+updates:
+  # Keep Docker base images in Dockerfiles up to date
+  - package-ecosystem: "docker"
+    directory: "/images"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "07:00"
+      timezone: "Etc/UTC"
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: "deps(docker):"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "docker"

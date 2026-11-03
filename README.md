@@ -2,9 +2,16 @@
 
 # container-images
 
-## About this project
+A collection of custom Dockerfiles for building lightweight, secure, and production-ready container images.
+This repository is intended to serve as a base for various containerized environments tailored to specific tools or use cases.
 
-Keeping technical images.
+## 🗂️ Available Images
+
+| Image Tag | Base Image     | Tools Included         | Purpose                                  |
+|-----------|----------------|------------------------|------------------------------------------|
+| `bash-jq` | `alpine:3.22`  | `bash`, `curl`, `jq`   | Lightweight image for running bash scripts with JSON and HTTP capabilities |
+
+> 🔐 All images are built with minimal layers and hardened by removing unnecessary tools like `apk`.
 
 ## Support, Feedback, Contributing
 
@@ -36,3 +43,4 @@ Copyright OpenKCM contributors. Please see our [LICENSE](LICENSE) for copyright 
 <p align="center">
   Copyright Linux Foundation Europe. For web site terms of use, trademark policy and other project policies please see <a href="https://linuxfoundation.eu/en/policies">https://linuxfoundation.eu/en/policies</a>.
 </p>
+
